@@ -18,7 +18,7 @@ MIN_TEXT_CHARS  = 200
 
 STATE = {"chat_model": "smollm2:135m", "timeout": 180}
 
-# Supported file extensions
+#Supported file extensions
 TEXT_EXTENSIONS = {
     ".txt", ".md", ".py", ".js", ".ts", ".java", ".c", ".cpp",
     ".cs", ".go", ".rs", ".rb", ".php", ".sh", ".bat", ".yaml",
@@ -28,6 +28,58 @@ SUPPORTED_EXTENSIONS = TEXT_EXTENSIONS | {
     ".docx", ".pdf", ".csv", ".xlsx", ".xls", ".pptx",
     ".html", ".htm", ".json", ".xml", ".epub", ".rtf",
 }
+
+#Ollama
+
+def ollama_models() -> list[str]:
+    try:
+        r = requests.get(f"{OLLAMA_URL}/api/tags", timeout=5)
+        r.raise_for_status()
+        return [m["name"] for m in r.json().get("models", [])]
+    except Exception:
+        return []
+
+def embed(text: str) -> list[float]:
+    resp = requests.post(f"{OLLAMA_URL}/api/embeddings",
+                         json={"model": EMBED_MODEL, "prompt": text}, timeout=30)
+    resp.raise_for_status()
+    return resp.json()["embedding"]
+
+def _live_clock(label: str, stop_event: threading.Event):
+    """Print a live elapsed timer on a single line until stop_event is set."""
+    start = time.time()
+    while not stop_event.is_set():
+        elapsed = time.time() - start
+        mins, secs = divmod(int(elapsed), 60)
+        sys.stdout.write(f"\r  {label} [{mins:02d}:{secs:02d}] ...")
+        sys.stdout.flush()
+        time.sleep(0.5)
+    elapsed = time.time() - start
+    mins, secs = divmod(int(elapsed), 60)
+    sys.stdout.write(f"\r  {label} — done in {mins:02d}:{secs:02d}        \n")
+    sys.stdout.flush()
+
+
+def generate(prompt: str) -> str:
+    stop = threading.Event()
+    clock = threading.Thread(
+        target=_live_clock,
+        args=(f"Generating [{STATE['chat_model']}]", stop),
+        daemon=True,
+    )
+    clock.start()
+    try:
+        resp = requests.post(
+            f"{OLLAMA_URL}/api/generate",
+            json={"model": STATE["chat_model"], "prompt": prompt, "stream": False},
+            timeout=STATE["timeout"],
+        )
+        resp.raise_for_status()
+        return resp.json()["response"].strip()
+    finally:
+        stop.set()
+        clock.join()
+
 
 
 #Database
