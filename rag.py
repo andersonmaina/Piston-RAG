@@ -124,7 +124,7 @@ def list_chunks(con):
 
 def sources(con):
     return con.execute(
-        "SELECT id, source, COUNT(*) FROM chunks GROUP BY source ORDER BY source"
+        "SELECT source, COUNT(*) FROM chunks GROUP BY source ORDER BY source"
     ).fetchall()
 
 def chunk_count(con) -> int:
