@@ -131,8 +131,14 @@ def chunk_count(con) -> int:
     return con.execute("SELECT COUNT(*) FROM chunks").fetchone()[0]
 
 
+#file loaders
+#ingest
 
 
+#Entry
+if __name__ == "__main__":
+    con = init_db()
+    #cmd_loop(con)
 
 
 
