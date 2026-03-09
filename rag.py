@@ -15,3 +15,16 @@ MAX_CHUNK_CHARS = 700
 TOP_K           = 4
 MAX_CTX_CHARS   = 2000
 MIN_TEXT_CHARS  = 200
+
+STATE = {"chat_model": "smollm2:135m", "timeout": 180}
+
+# Supported file extensions
+TEXT_EXTENSIONS = {
+    ".txt", ".md", ".py", ".js", ".ts", ".java", ".c", ".cpp",
+    ".cs", ".go", ".rs", ".rb", ".php", ".sh", ".bat", ".yaml",
+    ".yml", ".toml", ".ini", ".cfg", ".log", ".sql",
+}
+SUPPORTED_EXTENSIONS = TEXT_EXTENSIONS | {
+    ".docx", ".pdf", ".csv", ".xlsx", ".xls", ".pptx",
+    ".html", ".htm", ".json", ".xml", ".epub", ".rtf",
+}
